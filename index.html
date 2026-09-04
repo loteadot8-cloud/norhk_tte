@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Норский опрос</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#120e0a;
+    --soil:#241a12;
+    --soil-2:#2f2318;
+    --bone:#e7ddc6;
+    --bone-dim:#a99f88;
+    --violet:#6f3aa1;
+    --violet-glow:#b57fe8;
+    --rust:#8a2b2b;
+    --metal:#9d988e;
+    --metal-light:#d8d4c8;
+    --line: rgba(231,221,198,0.14);
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    background:var(--void);
+    color:var(--bone);
+    font-family:'PT Serif', serif;
+    overflow-x:hidden;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:32px 16px;
+    position:relative;
+    background:
+      radial-gradient(ellipse 900px 700px at 50% 20%, rgba(111,58,161,0.10), transparent 60%),
+      radial-gradient(circle at 50% 50%, #1a130d 0%, #120e0a 55%, #0a0705 100%);
+  }
+
+  /* --- тоннельная текстура на фоне --- */
+  .tunnel-bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    opacity:0.55;
+  }
+  .tunnel-bg svg{width:100%;height:100%;}
+
+  h1,h2,h3{
+    font-family:'Oswald', sans-serif;
+    margin:0;
+    letter-spacing:0.02em;
+  }
+
+  .app{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:640px;
+  }
+
+  .card{
+    position:relative;
+    background:linear-gradient(180deg, var(--soil-2), var(--soil));
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:44px 38px;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.4),
+      0 30px 60px -20px rgba(0,0,0,0.7),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border:1px solid rgba(111,58,161,0.18);
+    border-radius:2px;
+    pointer-events:none;
+  }
+
+  .screen{display:none;}
+  .screen.active{display:block; animation: fadein .5s ease both;}
+  @keyframes fadein{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* --- норский знак --- */
+  .znak{
+    display:block;
+    margin:0 auto 22px;
+    width:76px;
+    height:76px;
+  }
+  .znak line{
+    stroke:var(--violet-glow);
+    stroke-width:5;
+    stroke-linecap:round;
+    filter: drop-shadow(0 0 6px rgba(181,127,232,0.65));
+  }
+  .znak-pulse line{
+    animation: znakPulse 3.2s ease-in-out infinite;
+  }
+  @keyframes znakPulse{
+    0%,100%{ opacity:0.65; }
+    50%{ opacity:1; filter: drop-shadow(0 0 12px rgba(181,127,232,0.95)); }
+  }
+
+  .eyebrow{
+    text-align:center;
+    font-family:'Oswald', sans-serif;
+    font-size:12px;
+    letter-spacing:0.28em;
+    color:var(--violet-glow);
+    margin-bottom:10px;
+  }
+
+  h1.title{
+    text-align:center;
+    font-size:32px;
+    font-weight:700;
+    color:var(--bone);
+    text-shadow:0 2px 0 rgba(0,0,0,0.5);
+  }
+
+  .lede{
+    text-align:center;
+    color:var(--bone-dim);
+    font-size:16px;
+    line-height:1.6;
+    max-width:440px;
+    margin:16px auto 0;
+    font-style:italic;
+  }
+
+  .rules{
+    margin:26px 0 0;
+    padding:18px 20px;
+    border-left:2px solid var(--violet);
+    background:rgba(111,58,161,0.06);
+    font-size:14.5px;
+    line-height:1.7;
+    color:var(--bone-dim);
+  }
+  .rules b{color:var(--bone); font-weight:700;}
+
+  .btn{
+    display:block;
+    width:100%;
+    margin-top:28px;
+    padding:16px 20px;
+    background:var(--violet);
+    color:var(--bone);
+    border:none;
+    border-radius:2px;
+    font-family:'Oswald', sans-serif;
+    font-size:15px;
+    letter-spacing:0.04em;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .btn:hover{ background:#7d43b3; transform:translateY(-1px); }
+  .btn:active{ transform:translateY(0); }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn.ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--bone-dim);
+  }
+  .btn.ghost:hover{ background:rgba(255,255,255,0.03); color:var(--bone); }
+
+  /* --- шапка теста: таймер + прогресс --- */
+  .quiz-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:22px;
+  }
+  .timer{
+    font-family:'Oswald', sans-serif;
+    font-size:22px;
+    font-weight:600;
+    color:var(--bone);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:78px;
+  }
+  .timer .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--violet-glow);
+    box-shadow:0 0 8px var(--violet-glow);
+    animation:blink 1s step-start infinite;
+  }
+  @keyframes blink{50%{opacity:0.25;}}
+  .timer.low{ color:var(--rust); }
+  .timer.low .dot{ background:var(--rust); box-shadow:0 0 8px var(--rust); }
+
+  .progress-wrap{
+    flex:1;
+    height:6px;
+    background:rgba(255,255,255,0.06);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--violet), var(--violet-glow));
+    transition:width .35s ease;
+  }
+
+  .q-count{
+    font-family:'Oswald', sans-serif;
+    font-size:12px;
+    letter-spacing:0.1em;
+    color:var(--bone-dim);
+    white-space:nowrap;
+  }
+
+  .question{
+    font-size:19px;
+    line-height:1.5;
+    margin-bottom:18px;
+    color:var(--bone);
+  }
+  .question .qnum{ color:var(--violet-glow); font-family:'Oswald',sans-serif; font-weight:600; margin-right:6px;}
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 16px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    background:rgba(0,0,0,0.15);
+    cursor:pointer;
+    font-size:15px;
+    color:var(--bone-dim);
+    transition:border-color .15s ease, background .15s ease, color .15s ease;
+  }
+  .option:hover{ border-color:rgba(181,127,232,0.5); color:var(--bone); }
+  .option.selected{
+    border-color:var(--violet-glow);
+    background:rgba(111,58,161,0.16);
+    color:var(--bone);
+  }
+  .option .marker{
+    width:16px;height:16px;
+    flex:0 0 auto;
+    border-radius:50%;
+    border:1px solid var(--metal);
+  }
+  .option.selected .marker{
+    background:var(--violet-glow);
+    border-color:var(--violet-glow);
+    box-shadow:0 0 6px var(--violet-glow);
+  }
+
+  .quiz-nav{
+    display:flex;
+    gap:12px;
+    margin-top:26px;
+  }
+  .quiz-nav .btn{ margin-top:0; }
+
+  /* --- результат --- */
+  .result-stage{
+    position:relative;
+    text-align:center;
+  }
+  .mask-wrap{
+    position:relative;
+    width:220px;
+    margin:0 auto 8px;
+  }
+  .mask-wrap svg{ width:100%; display:block; }
+
+  .ggya-photo-frame{
+    position:relative;
+    width:220px;
+    height:220px;
+    margin:0 auto;
+    border-radius:50%;
+    overflow:hidden;
+    border:2px solid var(--violet-glow);
+    box-shadow:
+      0 0 0 6px rgba(111,58,161,0.14),
+      0 0 34px rgba(181,127,232,0.45),
+      inset 0 0 30px rgba(0,0,0,0.6);
+    background:#000;
+  }
+  .ggya-photo{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 22%;
+    display:block;
+    filter:contrast(1.12) saturate(0.85) sepia(0.12);
+  }
+  .ggya-photo-frame.glitching .ggya-photo{
+    animation: photoGlitch 0.28s steps(2) infinite;
+  }
+  @keyframes photoGlitch{
+    0%{ filter:contrast(1.12) saturate(0.85) sepia(0.12) hue-rotate(0deg); transform:translate(0,0) scale(1); }
+    50%{ filter:contrast(1.3) saturate(1.1) sepia(0.2) hue-rotate(18deg); transform:translate(-2px,1px) scale(1.01); }
+    100%{ filter:contrast(1.05) saturate(0.7) sepia(0.05) hue-rotate(-10deg); transform:translate(2px,-1px) scale(1); }
+  }
+  .znak-photo{
+    position:absolute;
+    bottom:6px;
+    right:6px;
+    width:34px;
+    height:34px;
+    opacity:0.85;
+  }
+
+  .scissors-corner{
+    position:absolute;
+    width:64px;
+    opacity:0;
+  }
+  .scissors-corner.left{ left:-18px; top:40%; }
+  .scissors-corner.right{ right:-18px; top:20%; transform:scaleX(-1); }
+
+  .glitch-text{
+    font-family:'Oswald', sans-serif;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    line-height:1.4;
+    margin:22px 0 6px;
+    color:var(--bone);
+    position:relative;
+  }
+  .glitch-text.pass{ color:var(--violet-glow); }
+  .glitch-text.fail{ color:var(--rust); }
+
+  .glitching{
+    animation: glitchShake 0.28s steps(2) infinite;
+    text-shadow:
+      2px 0 var(--rust),
+      -2px 0 var(--violet-glow);
+  }
+  @keyframes glitchShake{
+    0%{ transform:translate(0,0); }
+    25%{ transform:translate(-2px,1px); }
+    50%{ transform:translate(2px,-1px); }
+    75%{ transform:translate(-1px,-1px); }
+    100%{ transform:translate(1px,1px); }
+  }
+
+  .score-line{
+    font-family:'Oswald', sans-serif;
+    font-size:13px;
+    letter-spacing:0.14em;
+    color:var(--bone-dim);
+    margin-top:2px;
+  }
+
+  .flicker-in{
+    animation: flickerIn 0.9s ease both;
+  }
+  @keyframes flickerIn{
+    0%{ opacity:0; }
+    8%{ opacity:1; }
+    12%{ opacity:0.2; }
+    20%{ opacity:1; }
+    28%{ opacity:0.3; }
+    40%{ opacity:1; }
+    100%{ opacity:1; }
+  }
+
+  .screen-shake{
+    animation: cardShake 0.5s ease;
+  }
+  @keyframes cardShake{
+    0%,100%{ transform:translate(0,0); }
+    20%{ transform:translate(-6px,2px); }
+    40%{ transform:translate(5px,-2px); }
+    60%{ transform:translate(-4px,1px); }
+    80%{ transform:translate(3px,-1px); }
+  }
+
+  .footnote{
+    text-align:center;
+    margin-top:20px;
+    font-size:12.5px;
+    color:var(--bone-dim);
+    font-style:italic;
+    opacity:0.75;
+  }
+
+  @media (max-width:520px){
+    .card{ padding:30px 22px; }
+    h1.title{ font-size:26px; }
+    .glitch-text{ font-size:18px; }
+    .mask-wrap{ width:180px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tunnel-bg">
+  <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <radialGradient id="tunnelGrad" cx="50%" cy="50%" r="65%">
+        <stop offset="0%" stop-color="#1c130f"/>
+        <stop offset="45%" stop-color="#140f0b"/>
+        <stop offset="100%" stop-color="#0a0705"/>
+      </radialGradient>
+    </defs>
+    <rect width="800" height="800" fill="url(#tunnelGrad)"/>
+    <g fill="none" stroke="#3a2c1f" stroke-width="1">
+      <circle cx="400" cy="400" r="90"/>
+      <circle cx="400" cy="400" r="150"/>
+      <circle cx="400" cy="400" r="220"/>
+      <circle cx="400" cy="400" r="300"/>
+      <circle cx="400" cy="400" r="380"/>
+    </g>
+  </svg>
+</div>
+
+<div class="app">
+  <div class="card" id="card">
+
+    <!-- ЭКРАН 1: ВСТУПЛЕНИЕ -->
+    <div class="screen active" id="screen-intro">
+      <svg class="znak znak-pulse" viewBox="0 0 100 100">
+        <line x1="20" y1="38" x2="80" y2="38"/>
+        <line x1="20" y1="62" x2="80" y2="62"/>
+        <line x1="50" y1="14" x2="50" y2="86"/>
+      </svg>
+      <div class="eyebrow">Орден «Ножницы в хсщпе» представляет</div>
+      <h1 class="title">Норский опрос</h1>
+      <p class="lede">Ггя проверит, знаешь ли ты норские порядки. Отвечай честно &mdash; нора всё запомнит.</p>
+
+      <div class="rules">
+        <b>Норские правила:</b><br>
+        10 вопросов о норской жизни. На всё &mdash; 60 секунд.<br>
+        Выбирай один ответ из четырёх. В конце нажми «Завершить норский тест».<br>
+        Меньше 8 верных &mdash; ггя будет недоволен.
+      </div>
+
+      <button class="btn" id="btnStart">Пройти тест</button>
+    </div>
+
+    <!-- ЭКРАН 2: ТЕСТ -->
+    <div class="screen" id="screen-quiz">
+      <div class="quiz-head">
+        <div class="timer" id="timer"><span class="dot"></span><span id="timerVal">60</span> сек</div>
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="q-count" id="qCount">1 / 10</div>
+      </div>
+
+      <div class="question"><span class="qnum" id="qNum">01</span><span id="qText"></span></div>
+      <div class="options" id="optionsWrap"></div>
+
+      <div class="quiz-nav">
+        <button class="btn ghost" id="btnPrev">Назад</button>
+        <button class="btn" id="btnNext">Дальше</button>
+        <button class="btn" id="btnFinish" style="display:none;">Завершить норский тест</button>
+      </div>
+    </div>
+
+    <!-- ЭКРАН 3: РЕЗУЛЬТАТ -->
+    <div class="screen" id="screen-result">
+      <div class="result-stage">
+        <div class="mask-wrap" id="maskWrap">
+          <svg class="scissors-corner left" id="scissorsLeft" viewBox="0 0 100 60">
+            <g stroke="#c9c4b8" stroke-width="4" fill="none" stroke-linecap="round">
+              <line x1="5" y1="30" x2="70" y2="10"/>
+              <line x1="5" y1="30" x2="70" y2="50"/>
+              <circle cx="5" cy="17" r="9" fill="none"/>
+              <circle cx="5" cy="43" r="9" fill="none"/>
+            </g>
+            <line x1="70" y1="10" x2="95" y2="30" stroke="#b57fe8" stroke-width="3"/>
+            <line x1="70" y1="50" x2="95" y2="30" stroke="#b57fe8" stroke-width="3"/>
+          </svg>
+
+          <div class="ggya-photo-frame" id="ggyaFace">
+            <img src="ggya.jpg" alt="Ггя" class="ggya-photo">
+            <svg class="znak znak-photo" viewBox="0 0 100 100">
+              <line x1="20" y1="38" x2="80" y2="38"/>
+              <line x1="20" y1="62" x2="80" y2="62"/>
+              <line x1="50" y1="14" x2="50" y2="86"/>
+            </svg>
+          </div>
+
+          <svg class="scissors-corner right" id="scissorsRight" viewBox="0 0 100 60">
+            <g stroke="#c9c4b8" stroke-width="4" fill="none" stroke-linecap="round">
+              <line x1="5" y1="30" x2="70" y2="10"/>
+              <line x1="5" y1="30" x2="70" y2="50"/>
+              <circle cx="5" cy="17" r="9" fill="none"/>
+              <circle cx="5" cy="43" r="9" fill="none"/>
+            </g>
+            <line x1="70" y1="10" x2="95" y2="30" stroke="#b57fe8" stroke-width="3"/>
+            <line x1="70" y1="50" x2="95" y2="30" stroke="#b57fe8" stroke-width="3"/>
+          </svg>
+        </div>
+
+        <div class="glitch-text" id="resultText"></div>
+        <div class="score-line" id="scoreLine"></div>
+
+        <button class="btn ghost" id="btnRetry" style="margin-top:24px;">Пройти ещё раз</button>
+      </div>
+    </div>
+
+  </div>
+  <div class="footnote">Норский знак: 2 горизонтальные линии, пересечённые вертикальной, втрое длиннее.</div>
+</div>
+
+<script>
+(function(){
+  var QUESTIONS = [
+    {
+      q: "Что такое Нора на самом деле?",
+      options: ["Обычная дыра в земле", "Живое существо, охватывающее всю вселенную", "Пещера в Чите", "Здание ордена"],
+      correct: 1
+    },
+    {
+      q: "Кому принадлежит Нора?",
+      options: ["Дяде Пэ", "Пиху", "Ордену", "Никому — иначе она сжимает стены"],
+      correct: 3
+    },
+    {
+      q: "Что случилось с дядей Норой, который прокопал свою нору в Нору?",
+      options: ["Стал другом ггя", "Ггя его убил", "Сбежал в Эфиопию", "Стал норским существом"],
+      correct: 1
+    },
+    {
+      q: "Опасны ли норские крысы для Пиху?",
+      options: ["Да, опасны", "Нет, дружелюбны", "Только норовская крыса", "Они боятся Пиху"],
+      correct: 0
+    },
+    {
+      q: "Сколько лет ггя?",
+      options: ["100 лет", "1000 лет", "Миллион лет", "Неизвестно даже ггя"],
+      correct: 2
+    },
+    {
+      q: "Почему точный возраст Пиху неизвестен?",
+      options: ["Он соврал о возрасте", "Ггя многократно делал его снова маленьким", "У него амнезия", "Он норское существо"],
+      correct: 1
+    },
+    {
+      q: "Как дядя Пэ оживляет Пиху ножницами после избиения?",
+      options: ["Это просто метафора", "Буквально оживляет", "Только раз в год", "Это делает мать ггя"],
+      correct: 1
+    },
+    {
+      q: "Какой приём ножниц считается самым эффективным/жестоким по некоторым сведениям?",
+      options: ["Фрезер", "Щелчок", "Укол", "Вращение"],
+      correct: 1
+    },
+    {
+      q: "Кто, помимо ггя, знает язык ножниц и все их тайны?",
+      options: ["Пиху", "Мальчик бегемотик", "Дядя Ножницы", "Сикуныч"],
+      correct: 2
+    },
+    {
+      q: "Что делает орден «Ножницы в хсщпе» с нарушителем дядьских законов?",
+      options: ["Штрафует", "Убивает на месте или отправляет на дядьский суд в Эфиопию", "Исключает из дядь", "Ничего не делает"],
+      correct: 1
+    }
+  ];
+
+  var TOTAL_TIME = 60;
+  var timeLeft = TOTAL_TIME;
+  var timerInterval = null;
+  var current = 0;
+  var answers = new Array(QUESTIONS.length).fill(null);
+
+  var screenIntro = document.getElementById('screen-intro');
+  var screenQuiz = document.getElementById('screen-quiz');
+  var screenResult = document.getElementById('screen-result');
+
+  var btnStart = document.getElementById('btnStart');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var btnFinish = document.getElementById('btnFinish');
+  var btnRetry = document.getElementById('btnRetry');
+
+  var timerEl = document.getElementById('timer');
+  var timerVal = document.getElementById('timerVal');
+  var progressBar = document.getElementById('progressBar');
+  var qCount = document.getElementById('qCount');
+  var qNum = document.getElementById('qNum');
+  var qText = document.getElementById('qText');
+  var optionsWrap = document.getElementById('optionsWrap');
+
+  function showScreen(el){
+    [screenIntro, screenQuiz, screenResult].forEach(function(s){ s.classList.remove('active'); });
+    el.classList.add('active');
+  }
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function renderQuestion(){
+    var item = QUESTIONS[current];
+    qNum.textContent = pad(current + 1);
+    qText.textContent = item.q;
+    qCount.textContent = (current + 1) + ' / ' + QUESTIONS.length;
+    progressBar.style.width = (((current + 1) / QUESTIONS.length) * 100) + '%';
+
+    optionsWrap.innerHTML = '';
+    item.options.forEach(function(optText, idx){
+      var div = document.createElement('div');
+      div.className = 'option' + (answers[current] === idx ? ' selected' : '');
+      div.innerHTML = '<span class="marker"></span><span>' + optText + '</span>';
+      div.addEventListener('click', function(){
+        answers[current] = idx;
+        renderQuestion();
+      });
+      optionsWrap.appendChild(div);
+    });
+
+    btnPrev.disabled = current === 0;
+    if (current === QUESTIONS.length - 1){
+      btnNext.style.display = 'none';
+      btnFinish.style.display = 'block';
+    } else {
+      btnNext.style.display = 'block';
+      btnFinish.style.display = 'none';
+    }
+  }
+
+  function startTimer(){
+    timeLeft = TOTAL_TIME;
+    timerVal.textContent = timeLeft;
+    timerInterval = setInterval(function(){
+      timeLeft--;
+      timerVal.textContent = Math.max(timeLeft, 0);
+      if (timeLeft <= 10){ timerEl.classList.add('low'); }
+      if (timeLeft <= 0){
+        clearInterval(timerInterval);
+        finishTest();
+      }
+    }, 1000);
+  }
+
+  function stopTimer(){
+    if (timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+  }
+
+  function scoreOf(){
+    var score = 0;
+    for (var i = 0; i < QUESTIONS.length; i++){
+      if (answers[i] === QUESTIONS[i].correct) score++;
+    }
+    return score;
+  }
+
+  function finishTest(){
+    stopTimer();
+    var score = scoreOf();
+    var pass = score >= 8;
+
+    var resultText = document.getElementById('resultText');
+    var scoreLine = document.getElementById('scoreLine');
+    var card = document.getElementById('card');
+    var maskWrap = document.getElementById('maskWrap');
+    var scissorsLeft = document.getElementById('scissorsLeft');
+    var scissorsRight = document.getElementById('scissorsRight');
+
+    resultText.className = 'glitch-text ' + (pass ? 'pass' : 'fail');
+    resultText.textContent = pass
+      ? 'ХСЩТООО, ГХНАА НОООРКХ ТТА...?? ФХФХФХ'
+      : 'ХСЩТОО, НЕ ПРАХОЛ НООРХК ТЕЕХТ...?? ФХФХФХФХФХ';
+    scoreLine.textContent = 'ВЕРНО: ' + score + ' ИЗ ' + QUESTIONS.length;
+
+    showScreen(screenResult);
+
+    // анимационная последовательность появления
+    maskWrap.style.opacity = 0;
+    resultText.style.opacity = 0;
+    scoreLine.style.opacity = 0;
+    scissorsLeft.style.opacity = 0;
+    scissorsRight.style.opacity = 0;
+
+    setTimeout(function(){
+      card.classList.add('screen-shake');
+      maskWrap.classList.add('flicker-in');
+      maskWrap.style.opacity = 1;
+    }, 100);
+
+    setTimeout(function(){
+      resultText.classList.add('glitching');
+      document.getElementById('ggyaFace').classList.add('glitching');
+      resultText.style.opacity = 1;
+    }, 500);
+
+    setTimeout(function(){
+      resultText.classList.remove('glitching');
+      document.getElementById('ggyaFace').classList.remove('glitching');
+    }, 1900);
+
+    setTimeout(function(){
+      scoreLine.style.transition = 'opacity .5s ease';
+      scoreLine.style.opacity = 1;
+    }, 1000);
+
+    setTimeout(function(){
+      scissorsLeft.style.transition = 'opacity .4s ease';
+      scissorsRight.style.transition = 'opacity .4s ease';
+      scissorsLeft.style.opacity = 1;
+      scissorsRight.style.opacity = 1;
+    }, 1300);
+
+    setTimeout(function(){ card.classList.remove('screen-shake'); }, 650);
+  }
+
+  btnStart.addEventListener('click', function(){
+    current = 0;
+    answers = new Array(QUESTIONS.length).fill(null);
+    timerEl.classList.remove('low');
+    renderQuestion();
+    showScreen(screenQuiz);
+    startTimer();
+  });
+
+  btnPrev.addEventListener('click', function(){
+    if (current > 0){ current--; renderQuestion(); }
+  });
+
+  btnNext.addEventListener('click', function(){
+    if (current < QUESTIONS.length - 1){ current++; renderQuestion(); }
+  });
+
+  btnFinish.addEventListener('click', function(){
+    finishTest();
+  });
+
+  btnRetry.addEventListener('click', function(){
+    document.getElementById('card').classList.remove('screen-shake');
+    showScreen(screenIntro);
+  });
+})();
+</script>
+
+</body>
+</html>
