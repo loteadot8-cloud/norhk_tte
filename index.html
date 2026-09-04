@@ -270,10 +270,22 @@
     border-radius:50%;
     border:1px solid var(--metal);
   }
+  .option .marker.square{
+    border-radius:3px;
+  }
   .option.selected .marker{
     background:var(--violet-glow);
     border-color:var(--violet-glow);
     box-shadow:0 0 6px var(--violet-glow);
+  }
+  .q-hint{
+    display:block;
+    font-family:'Oswald', sans-serif;
+    font-size:11.5px;
+    letter-spacing:0.08em;
+    color:var(--violet-glow);
+    margin-top:6px;
+    text-transform:uppercase;
   }
 
   .quiz-nav{
@@ -476,7 +488,7 @@
         <div class="q-count" id="qCount">1 / 10</div>
       </div>
 
-      <div class="question"><span class="qnum" id="qNum">01</span><span id="qText"></span></div>
+      <div class="question"><span class="qnum" id="qNum">01</span><span id="qText"></span><span class="q-hint" id="qHint" style="display:none;">Выберите все верные варианты</span></div>
       <div class="options" id="optionsWrap"></div>
 
       <div class="quiz-nav">
@@ -538,53 +550,63 @@
   var QUESTIONS = [
     {
       q: "Что такое Нора на самом деле?",
+      type: "single",
       options: ["Обычная дыра в земле", "Живое существо, охватывающее всю вселенную", "Пещера в Чите", "Здание ордена"],
-      correct: 1
+      correct: [1]
+    },
+    {
+      q: "Какие существа обитают в норе?",
+      type: "multi",
+      options: ["Норские крысы", "Норовская крыса", "Мальчик бегемотик", "Сикуныч"],
+      correct: [0, 1]
     },
     {
       q: "Кому принадлежит Нора?",
+      type: "single",
       options: ["Дяде Пэ", "Пиху", "Ордену", "Никому — иначе она сжимает стены"],
-      correct: 3
+      correct: [3]
     },
     {
-      q: "Что случилось с дядей Норой, который прокопал свою нору в Нору?",
-      options: ["Стал другом ггя", "Ггя его убил", "Сбежал в Эфиопию", "Стал норским существом"],
-      correct: 1
-    },
-    {
-      q: "Опасны ли норские крысы для Пиху?",
-      options: ["Да, опасны", "Нет, дружелюбны", "Только норовская крыса", "Они боятся Пиху"],
-      correct: 0
+      q: "Кто знает язык ножниц?",
+      type: "multi",
+      options: ["Ггя", "Дядя Ножницы", "Пиху", "Мальчик бегемотик"],
+      correct: [0, 1]
     },
     {
       q: "Сколько лет ггя?",
+      type: "single",
       options: ["100 лет", "1000 лет", "Миллион лет", "Неизвестно даже ггя"],
-      correct: 2
+      correct: [2]
     },
     {
-      q: "Почему точный возраст Пиху неизвестен?",
-      options: ["Он соврал о возрасте", "Ггя многократно делал его снова маленьким", "У него амнезия", "Он норское существо"],
-      correct: 1
+      q: "Какие два напитка Пиху обязан пить каждый день?",
+      type: "multi",
+      options: ["Хсщпе", "Панох", "Чай", "Кофе"],
+      correct: [0, 1]
     },
     {
       q: "Как дядя Пэ оживляет Пиху ножницами после избиения?",
+      type: "single",
       options: ["Это просто метафора", "Буквально оживляет", "Только раз в год", "Это делает мать ггя"],
-      correct: 1
+      correct: [1]
+    },
+    {
+      q: "Кому разрешено приходить в нору, хотя они не считаются друзьями Пиху?",
+      type: "multi",
+      options: ["Мальчик бегемотик", "Сикуныч", "Романыч", "Генерал"],
+      correct: [0, 1]
     },
     {
       q: "Какой приём ножниц считается самым эффективным/жестоким по некоторым сведениям?",
+      type: "single",
       options: ["Фрезер", "Щелчок", "Укол", "Вращение"],
-      correct: 1
-    },
-    {
-      q: "Кто, помимо ггя, знает язык ножниц и все их тайны?",
-      options: ["Пиху", "Мальчик бегемотик", "Дядя Ножницы", "Сикуныч"],
-      correct: 2
+      correct: [1]
     },
     {
       q: "Что делает орден «Ножницы в хсщпе» с нарушителем дядьских законов?",
-      options: ["Штрафует", "Убивает на месте или отправляет на дядьский суд в Эфиопию", "Исключает из дядь", "Ничего не делает"],
-      correct: 1
+      type: "multi",
+      options: ["Штрафует", "Убивает на месте", "Отправляет на дядьский суд в Эфиопию", "Исключает из дядь"],
+      correct: [1, 2]
     }
   ];
 
@@ -592,7 +614,7 @@
   var timeLeft = TOTAL_TIME;
   var timerInterval = null;
   var current = 0;
-  var answers = new Array(QUESTIONS.length).fill(null);
+  var answers = QUESTIONS.map(function(){ return []; });
 
   var screenIntro = document.getElementById('screen-intro');
   var screenQuiz = document.getElementById('screen-quiz');
@@ -619,20 +641,31 @@
 
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
 
+  var qHint = document.getElementById('qHint');
+
   function renderQuestion(){
     var item = QUESTIONS[current];
     qNum.textContent = pad(current + 1);
     qText.textContent = item.q;
+    qHint.style.display = item.type === 'multi' ? 'block' : 'none';
     qCount.textContent = (current + 1) + ' / ' + QUESTIONS.length;
     progressBar.style.width = (((current + 1) / QUESTIONS.length) * 100) + '%';
 
     optionsWrap.innerHTML = '';
     item.options.forEach(function(optText, idx){
+      var isSelected = answers[current].indexOf(idx) !== -1;
       var div = document.createElement('div');
-      div.className = 'option' + (answers[current] === idx ? ' selected' : '');
-      div.innerHTML = '<span class="marker"></span><span>' + optText + '</span>';
+      div.className = 'option' + (isSelected ? ' selected' : '');
+      var markerClass = item.type === 'multi' ? 'marker square' : 'marker';
+      div.innerHTML = '<span class="' + markerClass + '"></span><span>' + optText + '</span>';
       div.addEventListener('click', function(){
-        answers[current] = idx;
+        if (item.type === 'multi'){
+          var pos = answers[current].indexOf(idx);
+          if (pos === -1){ answers[current].push(idx); }
+          else { answers[current].splice(pos, 1); }
+        } else {
+          answers[current] = [idx];
+        }
         renderQuestion();
       });
       optionsWrap.appendChild(div);
@@ -666,10 +699,20 @@
     if (timerInterval){ clearInterval(timerInterval); timerInterval = null; }
   }
 
+  function arraysEqualAsSets(a, b){
+    if (a.length !== b.length) return false;
+    var sa = a.slice().sort();
+    var sb = b.slice().sort();
+    for (var i = 0; i < sa.length; i++){
+      if (sa[i] !== sb[i]) return false;
+    }
+    return true;
+  }
+
   function scoreOf(){
     var score = 0;
     for (var i = 0; i < QUESTIONS.length; i++){
-      if (answers[i] === QUESTIONS[i].correct) score++;
+      if (arraysEqualAsSets(answers[i], QUESTIONS[i].correct)) score++;
     }
     return score;
   }
@@ -735,7 +778,7 @@
 
   btnStart.addEventListener('click', function(){
     current = 0;
-    answers = new Array(QUESTIONS.length).fill(null);
+    answers = QUESTIONS.map(function(){ return []; });
     timerEl.classList.remove('low');
     renderQuestion();
     showScreen(screenQuiz);
