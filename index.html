@@ -270,22 +270,10 @@
     border-radius:50%;
     border:1px solid var(--metal);
   }
-  .option .marker.square{
-    border-radius:3px;
-  }
   .option.selected .marker{
     background:var(--violet-glow);
     border-color:var(--violet-glow);
     box-shadow:0 0 6px var(--violet-glow);
-  }
-  .q-hint{
-    display:block;
-    font-family:'Oswald', sans-serif;
-    font-size:11.5px;
-    letter-spacing:0.08em;
-    color:var(--violet-glow);
-    margin-top:6px;
-    text-transform:uppercase;
   }
 
   .quiz-nav{
@@ -306,45 +294,6 @@
     margin:0 auto 8px;
   }
   .mask-wrap svg{ width:100%; display:block; }
-
-  .ggya-photo-frame{
-    position:relative;
-    width:220px;
-    height:220px;
-    margin:0 auto;
-    border-radius:50%;
-    overflow:hidden;
-    border:2px solid var(--violet-glow);
-    box-shadow:
-      0 0 0 6px rgba(111,58,161,0.14),
-      0 0 34px rgba(181,127,232,0.45),
-      inset 0 0 30px rgba(0,0,0,0.6);
-    background:#000;
-  }
-  .ggya-photo{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center 22%;
-    display:block;
-    filter:contrast(1.12) saturate(0.85) sepia(0.12);
-  }
-  .ggya-photo-frame.glitching .ggya-photo{
-    animation: photoGlitch 0.28s steps(2) infinite;
-  }
-  @keyframes photoGlitch{
-    0%{ filter:contrast(1.12) saturate(0.85) sepia(0.12) hue-rotate(0deg); transform:translate(0,0) scale(1); }
-    50%{ filter:contrast(1.3) saturate(1.1) sepia(0.2) hue-rotate(18deg); transform:translate(-2px,1px) scale(1.01); }
-    100%{ filter:contrast(1.05) saturate(0.7) sepia(0.05) hue-rotate(-10deg); transform:translate(2px,-1px) scale(1); }
-  }
-  .znak-photo{
-    position:absolute;
-    bottom:6px;
-    right:6px;
-    width:34px;
-    height:34px;
-    opacity:0.85;
-  }
 
   .scissors-corner{
     position:absolute;
@@ -488,7 +437,7 @@
         <div class="q-count" id="qCount">1 / 10</div>
       </div>
 
-      <div class="question"><span class="qnum" id="qNum">01</span><span id="qText"></span><span class="q-hint" id="qHint" style="display:none;">Выберите все верные варианты</span></div>
+      <div class="question"><span class="qnum" id="qNum">01</span><span id="qText"></span></div>
       <div class="options" id="optionsWrap"></div>
 
       <div class="quiz-nav">
@@ -513,14 +462,62 @@
             <line x1="70" y1="50" x2="95" y2="30" stroke="#b57fe8" stroke-width="3"/>
           </svg>
 
-          <div class="ggya-photo-frame" id="ggyaFace">
-            <img src="ggya.jpg" alt="Ггя" class="ggya-photo">
-            <svg class="znak znak-photo" viewBox="0 0 100 100">
-              <line x1="20" y1="38" x2="80" y2="38"/>
-              <line x1="20" y1="62" x2="80" y2="62"/>
-              <line x1="50" y1="14" x2="50" y2="86"/>
-            </svg>
-          </div>
+          <svg viewBox="0 0 220 260" id="ggyaFace">
+            <defs>
+              <filter id="rough">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="noise"/>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.4"/>
+              </filter>
+              <radialGradient id="faceGrad" cx="50%" cy="42%" r="60%">
+                <stop offset="0%" stop-color="#efe9db"/>
+                <stop offset="100%" stop-color="#cfc7b3"/>
+              </radialGradient>
+            </defs>
+
+            <!-- камуфляжная кепка -->
+            <path d="M55 46 Q110 8 165 46 L168 58 Q110 34 52 58 Z" fill="#4a5232"/>
+            <path d="M52 58 Q110 34 168 58 L172 66 Q110 44 48 66 Z" fill="#3a4128"/>
+
+            <!-- уши -->
+            <path d="M28 96 Q10 108 22 150 Q40 150 48 122 Z" fill="url(#faceGrad)" stroke="#8f8878" stroke-width="2" filter="url(#rough)"/>
+            <path d="M192 96 Q210 108 198 150 Q180 150 172 122 Z" fill="url(#faceGrad)" stroke="#8f8878" stroke-width="2" filter="url(#rough)"/>
+
+            <!-- маска-лицо -->
+            <path d="M110 62 C160 62 182 100 178 148 C174 196 150 226 110 228 C70 226 46 196 42 148 C38 100 60 62 110 62 Z"
+                  fill="url(#faceGrad)" stroke="#8f8878" stroke-width="2.5" filter="url(#rough)"/>
+
+            <!-- заштрихованные брови/борода серым -->
+            <g stroke="#6d675a" stroke-width="3" stroke-linecap="round" opacity="0.85">
+              <path d="M64 108 Q80 96 100 104"/>
+              <path d="M68 114 Q84 102 102 110"/>
+              <path d="M120 104 Q142 94 158 106"/>
+              <path d="M122 110 Q144 100 160 112"/>
+              <path d="M58 176 Q70 214 100 220" fill="none"/>
+              <path d="M66 180 Q78 212 104 218" fill="none"/>
+              <path d="M162 176 Q150 214 120 220" fill="none"/>
+              <path d="M154 180 Q142 212 116 218" fill="none"/>
+              <path d="M78 192 Q110 216 142 192" fill="none"/>
+              <path d="M84 200 Q110 220 136 200" fill="none"/>
+            </g>
+
+            <!-- косоглазые глаза -->
+            <ellipse cx="86" cy="128" rx="14" ry="10" fill="#f4f0e6" stroke="#7c766a" stroke-width="1.5"/>
+            <ellipse cx="140" cy="128" rx="14" ry="10" fill="#f4f0e6" stroke="#7c766a" stroke-width="1.5"/>
+            <circle cx="94" cy="129" r="5" fill="#2a1f16" id="eyeL"/>
+            <circle cx="130" cy="129" r="5" fill="#2a1f16" id="eyeR"/>
+
+            <!-- открытый кричащий рот -->
+            <ellipse cx="110" cy="176" rx="26" ry="20" fill="#3a1210" id="mouth"/>
+            <ellipse cx="110" cy="172" rx="18" ry="12" fill="#5c1c1a"/>
+
+            <!-- волосы по бокам торчком -->
+            <g stroke="#5c564a" stroke-width="3" stroke-linecap="round">
+              <path d="M46 78 L34 66"/>
+              <path d="M50 86 L36 78"/>
+              <path d="M174 78 L186 66"/>
+              <path d="M170 86 L184 78"/>
+            </g>
+          </svg>
 
           <svg class="scissors-corner right" id="scissorsRight" viewBox="0 0 100 60">
             <g stroke="#c9c4b8" stroke-width="4" fill="none" stroke-linecap="round">
@@ -549,72 +546,62 @@
 (function(){
   var QUESTIONS = [
     {
-      q: "Что такое Нора на самом деле?",
-      type: "single",
-      options: ["Обычная дыра в земле", "Живое существо, охватывающее всю вселенную", "Пещера в Чите", "Здание ордена"],
-      correct: [1]
+      q: "На какой глубине купался Ггя на Байкале, когда чуть не задохнулся?",
+      options: ["100 метров", "200 метров", "300 метров", "400 метров"],
+      correct: 1
     },
     {
-      q: "Какие существа обитают в норе?",
-      type: "multi",
-      options: ["Норские крысы", "Норовская крыса", "Мальчик бегемотик", "Сикуныч"],
-      correct: [0, 1]
+      q: "Когда родился дядя Реблищ?",
+      options: ["70-е годы XIX века", "80-е годы XIX века", "90-е годы XIX века", "20-е годы XX века"],
+      correct: 1
     },
     {
-      q: "Кому принадлежит Нора?",
-      type: "single",
-      options: ["Дяде Пэ", "Пиху", "Ордену", "Никому — иначе она сжимает стены"],
-      correct: [3]
+      q: "Чем не пользуется Ггя?",
+      options: ["Циркуль", "Ножницы", "Маникюрные ножницы", "Пинцет"],
+      correct: 3
     },
     {
-      q: "Кто знает язык ножниц?",
-      type: "multi",
-      options: ["Ггя", "Дядя Ножницы", "Пиху", "Мальчик бегемотик"],
-      correct: [0, 1]
+      q: "Выберите правильное утверждение?",
+      options: ["Дядя сильные сильнее дяди слабого", "Дядя слабый сильнее дяди сильного", "Дядя слабый и дядя сильный одинаковые по силе", "Ничто из этого неправильно"],
+      correct: 1
     },
     {
-      q: "Сколько лет ггя?",
-      type: "single",
-      options: ["100 лет", "1000 лет", "Миллион лет", "Неизвестно даже ггя"],
-      correct: [2]
+      q: "Сколько лет Ггя стоял под дождем в архее?",
+      options: ["300 тысяч лет", "Миллион лет", "Миллиард лет", "2 миллиарда лет"],
+      correct: 0
     },
     {
-      q: "Какие два напитка Пиху обязан пить каждый день?",
-      type: "multi",
-      options: ["Хсщпе", "Панох", "Чай", "Кофе"],
-      correct: [0, 1]
+      q: "Что случилось, когда Пиху раскрыл норскую тайну?",
+      options: ["Пиху обратился к дяде доктору", "У Пиху начались видения ножниц", "Пиху был зверски избит Ггя", "Пиху устроил заговор против Ггя"],
+      correct: 1
     },
     {
-      q: "Как дядя Пэ оживляет Пиху ножницами после избиения?",
-      type: "single",
-      options: ["Это просто метафора", "Буквально оживляет", "Только раз в год", "Это делает мать ггя"],
-      correct: [1]
+      q: "Что происходит, когда ггя врезается в норский камень",
+      options: ["Нора трясется", "Нора начинает выть", "происходит землятресение", "Гремит гром"],
+      correct: 3
     },
     {
-      q: "Кому разрешено приходить в нору, хотя они не считаются друзьями Пиху?",
-      type: "multi",
-      options: ["Мальчик бегемотик", "Сикуныч", "Романыч", "Генерал"],
-      correct: [0, 1]
+      q: "Как зовут собаку матери Ггя?",
+      options: ["Бобик", "Шарик", "Жучка", "Рекс"],
+      correct: 0
     },
     {
-      q: "Какой приём ножниц считается самым эффективным/жестоким по некоторым сведениям?",
-      type: "single",
-      options: ["Фрезер", "Щелчок", "Укол", "Вращение"],
-      correct: [1]
+      q: "Что такое норская педагогика?",
+      options: ["истема наказаний и поощрений, с помощью которой Ггя контролирует поведение Пиху в норе", "Методика обучения Пиху норским законам, правилам и правильному обращению с ножницами", "Ножницы в хсщпеСвод неписаных правил, которые Пиху должен усвоить, чтобы выжить в норе и не разозлить Ггя", "Братство молоткаНеотъемлемая часть норской жизни по воспитанию в Пиху черт, соответствующих норской жизни, и стиранию дурных манер"],
+      correct: 3
     },
     {
-      q: "Что делает орден «Ножницы в хсщпе» с нарушителем дядьских законов?",
-      type: "multi",
-      options: ["Штрафует", "Убивает на месте", "Отправляет на дядьский суд в Эфиопию", "Исключает из дядь"],
-      correct: [1, 2]
+      q: "Какой размер норовской крысы",
+      options: ["2 метра", "8 метров", "28 метров", "Неизвестно"],
+      correct: 3
     }
   ];
 
-  var TOTAL_TIME = 60;
+  var TOTAL_TIME = 90;
   var timeLeft = TOTAL_TIME;
   var timerInterval = null;
   var current = 0;
-  var answers = QUESTIONS.map(function(){ return []; });
+  var answers = new Array(QUESTIONS.length).fill(null);
 
   var screenIntro = document.getElementById('screen-intro');
   var screenQuiz = document.getElementById('screen-quiz');
@@ -641,31 +628,20 @@
 
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
 
-  var qHint = document.getElementById('qHint');
-
   function renderQuestion(){
     var item = QUESTIONS[current];
     qNum.textContent = pad(current + 1);
     qText.textContent = item.q;
-    qHint.style.display = item.type === 'multi' ? 'block' : 'none';
     qCount.textContent = (current + 1) + ' / ' + QUESTIONS.length;
     progressBar.style.width = (((current + 1) / QUESTIONS.length) * 100) + '%';
 
     optionsWrap.innerHTML = '';
     item.options.forEach(function(optText, idx){
-      var isSelected = answers[current].indexOf(idx) !== -1;
       var div = document.createElement('div');
-      div.className = 'option' + (isSelected ? ' selected' : '');
-      var markerClass = item.type === 'multi' ? 'marker square' : 'marker';
-      div.innerHTML = '<span class="' + markerClass + '"></span><span>' + optText + '</span>';
+      div.className = 'option' + (answers[current] === idx ? ' selected' : '');
+      div.innerHTML = '<span class="marker"></span><span>' + optText + '</span>';
       div.addEventListener('click', function(){
-        if (item.type === 'multi'){
-          var pos = answers[current].indexOf(idx);
-          if (pos === -1){ answers[current].push(idx); }
-          else { answers[current].splice(pos, 1); }
-        } else {
-          answers[current] = [idx];
-        }
+        answers[current] = idx;
         renderQuestion();
       });
       optionsWrap.appendChild(div);
@@ -699,20 +675,10 @@
     if (timerInterval){ clearInterval(timerInterval); timerInterval = null; }
   }
 
-  function arraysEqualAsSets(a, b){
-    if (a.length !== b.length) return false;
-    var sa = a.slice().sort();
-    var sb = b.slice().sort();
-    for (var i = 0; i < sa.length; i++){
-      if (sa[i] !== sb[i]) return false;
-    }
-    return true;
-  }
-
   function scoreOf(){
     var score = 0;
     for (var i = 0; i < QUESTIONS.length; i++){
-      if (arraysEqualAsSets(answers[i], QUESTIONS[i].correct)) score++;
+      if (answers[i] === QUESTIONS[i].correct) score++;
     }
     return score;
   }
@@ -752,13 +718,11 @@
 
     setTimeout(function(){
       resultText.classList.add('glitching');
-      document.getElementById('ggyaFace').classList.add('glitching');
       resultText.style.opacity = 1;
     }, 500);
 
     setTimeout(function(){
       resultText.classList.remove('glitching');
-      document.getElementById('ggyaFace').classList.remove('glitching');
     }, 1900);
 
     setTimeout(function(){
@@ -778,7 +742,7 @@
 
   btnStart.addEventListener('click', function(){
     current = 0;
-    answers = QUESTIONS.map(function(){ return []; });
+    answers = new Array(QUESTIONS.length).fill(null);
     timerEl.classList.remove('low');
     renderQuestion();
     showScreen(screenQuiz);
